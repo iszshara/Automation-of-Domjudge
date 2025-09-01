@@ -1,0 +1,55 @@
+---
+# Installs Domjudge
+
+- name: Creating new Directory >>> Domjudge
+  ansible.builtin.file:
+    path: /home/{{ username }}/Domjudge
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '0755'
+  become: true
+
+- name: Downloading Domjudge
+  ansible.builtin.get_url:
+    url: https://www.domjudge.org/releases/domjudge-8.3.2.tar.gz
+    dest: /home/{{ username }}/Domjudge
+  become_user: "{{ username }}"
+
+- name: Setting Ownership
+  ansible.builtin.file:
+    path: /home/{{ username }}/Domjudge/domjudge-8.3.2
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '0755'
+    recurse: yes
+  become: true
+
+- name: Unarchive Domjudge
+  ansible.builtin.unarchive:
+    src: /home/{{ username }}/Domjudge/domjudge-8.3.2.tar.gz
+    dest: /home/{{ username }}/Domjudge
+    remote_src: yes
+    owner: "{{ username }}"
+    group: "{{ username }}" 
+  become: true    
+
+- name: Configure Domjudge
+  ansible.builtin.command: ./configure --prefix=/home/{{ username }}/Domjudge
+  args:
+    chdir: /home/{{ username }}/Domjudge/domjudge-8.3.2
+  
+  become_user: "{{ username }}" 
+
+- name: Compile Domjudge
+  ansible.builtin.command: make domserver
+  args:
+    chdir: /home/{{ username }}/Domjudge/domjudge-8.3.2
+  become: true
+  become_user: "{{ username }}"
+
+- name: Install Domjudge
+  ansible.builtin.command: make install-domserver
+  args:
+    chdir: /home/{{ username }}/Domjudge/domjudge-8.3.2
+  become: true

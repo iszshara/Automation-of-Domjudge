@@ -1,0 +1,31 @@
+---
+# This playbook install all the necessary packages for Domjudge
+- name: Installing the necessary Software
+  apt:
+    name: "{{ item }}"
+    state: latest 
+    update_cache: yes
+  loop:
+    - libcgroup-dev
+    - make
+    - acl
+    - zip
+    - unzip
+    - mariadb-server
+    - apache2
+    - php
+    - php-fpm
+    - php-gd
+    - php-cli
+    - php-intl
+    - php-mbstring
+    - php-mysql
+    - php-curl
+    - php-json
+    - php-xml
+    - php-zip
+    - composer
+    - ntp
+    - gcc
+    - pkg-config
+    - build-essential

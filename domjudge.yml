@@ -1,0 +1,17 @@
+---
+
+- name: Playbook for Installing DOMjudge on a Debian Server. Should be executed on the Host Server!
+  hosts: controller
+  become: yes
+
+  vars_prompt:
+    - name: username
+      prompt: "Enter a  username to create a Domjudge user"
+      private: no
+
+  roles:
+    - role: common
+    - role: domjudge-user
+    - role: domjudge-build
+    - role: domjudge-db
+    - role: domjudge-web

@@ -1,0 +1,8 @@
+---
+# Creates a user suitable for Domjudge
+
+- name: Creating user {{ username }}
+  ansible.builtin.user:
+    name: "{{ username }}"
+    shell: /bin/bash
+    create_home: yes   
