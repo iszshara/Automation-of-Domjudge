@@ -21,10 +21,16 @@
     chdir: /home/{{ username }}/Domjudge/domserver/bin
   become_user: "{{ username }}"
 
-- name: Run Domjudge database setup script tp install database and user. Warning...User action needed
+- name: Drop Domjudge Database if it exists
+  community.mysql.mysql_query:
+    query: "DROP DATABASE IF EXISTS domjudge;"
+    login_user: root
+    login_password: "{{ db_admin_password }}"
+  become: true
+
+- name: Run Domjudge database setup script tp install database and user
   ansible.builtin.command: >
-    ./dj_setup_database install -u root -p {{ domjudge_admin_password }}
+    ./dj_setup_database -u root -p {{ db_admin_password }} install
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
-  become_user: "{{ username }}"
-  no_log: true
+  become: true

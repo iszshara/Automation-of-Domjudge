@@ -16,3 +16,12 @@
     create: yes
     validate: 'visudo -cf %s'
   become: true
+
+- name: Ensure remote_tmp directory exists for "{{ username }}"
+  ansible.builtin.file:
+    path: /home/{{ username }}/.ansible/tmp
+    state: directory
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    mode: '0755'
+  become: true
