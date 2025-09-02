@@ -6,8 +6,14 @@
 
   vars_prompt:
     - name: username
-      prompt: "Enter a  username to create a Domjudge user"
+      prompt: "Enter a username to create a user fo Domjudge"
       private: no
+    - name: user_password
+      prompt: "Please enter your password for the Domjudge user"
+      private: yes
+
+  vars_files:
+    - vault.yml
 
   roles:
     - role: common

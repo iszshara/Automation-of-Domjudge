@@ -1,0 +1,30 @@
+---
+# Creates the Domjudge Database and configures the Database
+
+- name: Ensure MariaDB is installed
+  ansible.builtin.package:
+    name: mariadb-server
+    state: present
+  become: true
+
+- name: Ensure MariaDB is running
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+    enabled: true
+  become: true
+
+- name: Generate database credentials file
+  ansible.builtin.command: >
+    ./dj_setup_database genpass
+  args:
+    chdir: /home/{{ username }}/Domjudge/domserver/bin
+  become_user: "{{ username }}"
+
+- name: Run Domjudge database setup script tp install database and user. Warning...User action needed
+  ansible.builtin.command: >
+    ./dj_setup_database install -u root -p {{ domjudge_admin_password }}
+  args:
+    chdir: /home/{{ username }}/Domjudge/domserver/bin
+  become_user: "{{ username }}"
+  no_log: true

@@ -1,0 +1,5 @@
+# Database Admin Password
+domjudge-db_admin_password: "Change this text to your admin password for the domjudge database"
+
+# User Password
+user_password: "Change this to your users password"

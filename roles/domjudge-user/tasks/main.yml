@@ -5,4 +5,14 @@
   ansible.builtin.user:
     name: "{{ username }}"
     shell: /bin/bash
-    create_home: yes   
+    create_home: yes
+    password: "{{ user_password | password_hash('sha512')  }}"
+
+- name: Add {{ username }} to sudoers file
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/99-{{ username }}-domjudge
+    line: "{{ username }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+    create: yes
+    validate: 'visudo -cf %s'
+  become: true
