@@ -34,3 +34,28 @@
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
   become: true
+
+- name: Checking if databases were successfully created
+  community.mysql.mysql_query:
+    login_user: root
+    login_password: "{{ db_admin_password }}"
+    query: "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{{ item }}';"
+  loop:
+    - domjudge
+    - information_schema
+    - mysql
+    - performance_schema
+    - sys
+  register: db_check
+
+- name: Throws an Error if Databases are missing
+  ansible.builtin.debug:
+    msg: >-
+      {% if item.query_result[0] | length > 0 -%}
+        Database '{{ item.item }}' exists.
+      {%- else -%}
+        Database '{{ item.item }}' does not exist.
+      {%- endif %}
+  loop: "{{ db_check.results }}"
+  no_log: true
+   
