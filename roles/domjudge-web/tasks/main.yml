@@ -1,0 +1,41 @@
+---
+# Creates the webinterface for Domjudge
+
+- name: Set path and PHP version facts
+  ansible.builtin.set_fact:
+    domjudge_install_path: /home/{{ username }}/Domjudge/domserver
+    php_version: 8.2 
+
+- name: Link Apache configuration for Domjudge
+  ansible.builtin.file:
+    src: "{{ domjudge_install_path }}/etc/apache.conf"
+    dest: /etc/apache2/conf-available/domjudge.conf
+    state: link
+  become: true
+
+- name: Link PHP-FPM pool configuration for Domjudge
+  ansible.builtin.file:
+    src: "{{ domjudge_install_path }}/etc/domjudge-fpm.conf"
+    dest: /etc/php/{{ php_version }}/fpm/pool.d/domjudge.conf
+    state: link
+  become: true
+
+- name: Enable required apache modules
+  ansible.builtin.command: "a2enmod proxy_fcgi setenvif rewrite"
+  become: true
+
+- name: Enable Apache configurations for PHP-FPM and Domjudge
+  ansible.builtin.command: "a2enconf php{{ php_version }}-fpm domjudge"
+  become: true
+
+- name: Reload PHP-FPM service
+  ansible.builtin.service:
+    name: "php{{ php_version }}-fpm"
+    state: reloaded
+  become: true
+
+- name: Reload apache2 service
+  ansible.builtin.service:
+    name: apache2
+    state: reloaded
+  become: true
