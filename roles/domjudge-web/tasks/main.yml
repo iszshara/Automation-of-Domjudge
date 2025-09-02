@@ -15,7 +15,7 @@
 
 - name: Link PHP-FPM pool configuration for Domjudge
   ansible.builtin.file:
-    src: "{{ domjudge_install_path }}/etc/domjudge-fpm.conf"
+    src: /{{ domjudge_install_path }}/etc/domjudge-fpm.conf
     dest: /etc/php/{{ php_version }}/fpm/pool.d/domjudge.conf
     state: link
   become: true
@@ -39,3 +39,15 @@
     name: apache2
     state: reloaded
   become: true
+
+- name: Reset admin user password
+  ansible.builtin.shell: 
+    cmd: ./bin/console domjudge:reset-user-password admin
+    chdir: "{{ domjudge_install_path }}/webapp"
+  register: shell_output
+  become_user: "{{ username }}"
+
+- name: Show the password
+  ansible.builtin.debug:
+    msg: "{{ shell_output.stdout | split ('[OK]') | last | trim }}"
+
