@@ -2,5 +2,5 @@
 
 ## To install:
 ```
-ansible-playbook --ask-become-pass domjudge.yml
+ansible-playbook --ask-vault-pass --ask-become-pass domjudge.yml
 ```
