@@ -20,6 +20,7 @@
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
   become_user: "{{ username }}"
+  no_log: true
 
 - name: Drop Domjudge Database if it exists
   community.mysql.mysql_query:
@@ -27,6 +28,7 @@
     login_user: root
     login_password: "{{ db_admin_password }}"
   become: true
+  no_log: true
 
 - name: Run Domjudge database setup script tp install database and user
   ansible.builtin.command: >
@@ -34,6 +36,7 @@
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
   become: true
+  no_log: true
 
 - name: Checking if databases were successfully created
   community.mysql.mysql_query:
@@ -47,6 +50,7 @@
     - performance_schema
     - sys
   register: db_check
+  no_log: true
 
 - name: Throws an Error if Databases are missing
   ansible.builtin.debug:
