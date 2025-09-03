@@ -1,7 +1,12 @@
-# Automation of Domjudge
+# Automation of Domjudge Server
 
 ## Prerequisites
+Caution: Everything was tested on Debian (ARM)
+
 You have to download ansible
+```
+sudo apt install ansible
+```
 
 ## Before installing
 
@@ -17,4 +22,4 @@ ansible-playbook domjudge.yml --ask-vault-pass --ask-become-pass
 ```
 
 ## Info
-At the end of the setup process you will receive a password to log into the Domserver
+At the end of the setup process you will receive a password to log into the Domserver. Note it down!
