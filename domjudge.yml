@@ -18,6 +18,22 @@
   roles:
     - role: common
     - role: domjudge-user
-    - role: domjudge-build
+    - role: domjudge-server-build
     - role: domjudge-db
     - role: domjudge-web
+    - role: domjudge-judgehost-build
+    - role: domjudge-judgedaemon
+
+
+  tasks:
+    - name: Reset admin user password
+      ansible.builtin.shell: 
+        cmd: ./bin/console domjudge:reset-user-password admin
+        chdir: "{{ domjudge_install_path }}/webapp"
+      register: shell_output
+      become_user: "{{ username }}"
+      no_log: true
+
+    - name: Show the password
+      ansible.builtin.debug:
+        msg: "{{ shell_output.stdout | split ('[OK]') | last | trim }}"

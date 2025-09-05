@@ -30,3 +30,12 @@
     - pkg-config
     - build-essential
     - python3-mysqldb
+    - debootstrap
+    - lsof
+    - procps
+
+- name: Removing apport to resolve possible conflicts with judging
+  ansible.builtin.package:
+    name: apport
+    state: absent
+    update_cache: yes

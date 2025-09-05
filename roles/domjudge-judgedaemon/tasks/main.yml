@@ -1,0 +1,73 @@
+---
+# Sets up the Judgedaemon and a user with sufficient privileges
+
+- name: Set path to judgehost
+  ansible.builtin.set_fact:
+    judgehost_install_path: /home/{{ username }}/Domjudge/judgehost
+ 
+- name: Adds group for non-privileged user
+  ansible.builtin.group:
+    name: domjudge-run
+    state: present
+  become: true
+
+- name: Adds user domjudge-run without home dir and login
+  ansible.builtin.user:
+    name: domjduge-run-2
+    shell: /bin/false
+    home: /nonexistent
+    group: domjudge-run
+    create_home: no
+    state: present
+  become: true
+
+- name: add sudoers-domjudge to sudoers.d for runguard
+  ansible.builtin.copy:
+    src: "{{ judgehost_install_path }}/etc/sudoers-domjudge"
+    dest: "/etc/sudoers.d/domjudge-sudoers"
+    owner: root
+    group: root
+    mode: '0440'
+  become: true
+
+- name: Adding package for rustc
+  ansible.builtin.set_fact:
+    install_packages: [rustc]
+
+- name: Creating a chroot environment
+  ansible.builtin.command: "sudo ./dj_make_chroot -y -i {{ install_packages | join('-i')  }}"
+  args:
+    chdir: "{{ judgehost_install_path }}/bin"
+  become: true
+
+- name: Check the current grub configuration for required parameters
+  ansible.builtin.slurp:
+    src: /etc/default/grub
+  register: grub_content
+  become: true
+
+- name: Sets missing Variables, if required grub paramters are missing
+  ansible.builtin.set_fact:
+    grub_params_missing: >-
+          {{ not (grub_content.content | b64decode | regex_search('cgroup_enable=memory') and
+                  grub_content.content | b64decode | regex_search('swapaccount=1') and
+                  grub_content.content | b64decode | regex_search('isolcpus=2,3') and
+                  grub_content.content | b64decode | regex_search('systemd.unified_cgroup_hierarchy=0') and
+                  grub_content.content | b64decode | regex_search('SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1')) }}
+
+- name: Edit grub config to add cgroup and swapp accounting to boot options
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regex: '^GRUB_CMDLINE_LINUX_DEFAULT=".*"'
+    line: '"GRUB_CMDLINE_LINUX_DEFAULT="quiet cgroup_enable=memory swapaccount=1 isolcpus=2,3 systemd.unified_cgroup_hierarchy=0 SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1"'
+  become: true
+  when: not grub_params_missing
+
+- name: Grub aktualisieren
+  ansible.builtin.command: update-grub
+  become: true
+  when: not grub_params_missing
+
+- name: "Restarting the Host. ATTENTION -> Your PC and the playbook will restart and resume on their own!"
+  ansible.builtin.reboot:
+  when: not grub_params_missing 

@@ -1,0 +1,21 @@
+---
+# Builds the judgehost
+
+- name: Configure Domjudge Judgehost
+  ansible.builtin.command: ./configure --prefix=/home/{{ username }}/Domjudge
+  args:
+    chdir: /home/{{ username }}/Domjudge/domjudge-8.3.2
+  become_user: "{{ username }}" 
+
+- name: Compile Judgehost
+  ansible.builtin.command: make judgehost
+  args:
+    chdir: /home/{{ username }}/Domjudge/domjudge-8.3.2
+  become: true
+  become_user: "{{ username }}"
+
+- name: Install Judgehost
+  ansible.builtin.command: make install-judgehost
+  args:
+    chdir: /home/{{ username }}/Domjudge/domjudge-8.3.2
+  become: true
