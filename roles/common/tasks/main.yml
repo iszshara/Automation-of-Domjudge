@@ -33,6 +33,7 @@
     - debootstrap
     - lsof
     - procps
+    - python3-yaml
 
 - name: Removing apport to resolve possible conflicts with judging
   ansible.builtin.package:
