@@ -37,3 +37,13 @@ The BECOME password is your users password!
 
 ## Info
 After the Installation of the domserver, a file with a password for the Webinterface will be provided. Make sure to safe the password. It is recommended to delete the file after you have saved the password!
+
+## About DOMjudge
+
+This repository contains an ansible automation script for the installation and configuration of DOMjudge.
+
+DOMjudge is a Free and Open Source Software (FOSS) for runnung programming contests. It is licensed under the GNU General Public License (GPL) v2.0.
+
+For more information and to support the original authors, please visit the official DOMjudge Website.
+
+[Visit DOMjudge](https://www.domjudge.org/)
