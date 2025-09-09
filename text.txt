@@ -1,9 +1,0 @@
-
-- name: Sets missing Variables, if required grub paramters are missing
-  ansible.builtin.set_fact:
-    grub_params_missing: >-
-          {{ not (grub_content.content | b64decode | regex_search('cgroup_enable=memory') and
-                  grub_content.content | b64decode | regex_search('swapaccount=1') and
-                  grub_content.content | b64decode | regex_search('isolcpus=2,3') and
-                  grub_content.content | b64decode | regex_search('systemd.unified_cgroup_hierarchy=0') and
-                  grub_content.content | b64decode | regex_search('SYSTEMD_CGROUP_ENABLE_LEGACY_FORCE=1')) }}
