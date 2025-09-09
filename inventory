@@ -1,12 +1,17 @@
+# Enter your host(s) like the example
 [all_hosts]
-192.168.224.138 ansible_user=user1 ansible_ssh_private_key_file=~/.ssh/ansible
-192.168.224.137 ansible_user=user2 ansible_ssh_private_key_file=~/.ssh/ansible
 
-[controller]
-127.0.0.1 ansible_connection=local
+# Example
+192.168.0.2 ansible_user=user ansible_ssh_private_key_file=~/.ssh/your_ssh_key_file_here
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Enter your judgedaemon here. Note: It is possible to run domserver and judgedaemon on one server!
 [domjudge-judgedaemon]
-192.168.224.138 ansible_user=user1 ansible_ssh_private_key_file=~/.ssh/ansible
 
+# Example
+192.168.0.2 ansible_user=user ansible_ssh_private_key_file=~/.ssh/your_ssh_key_file_here
+
+# Don't change this line!
 [domjudge-judgedaemon:vars]
 ansible_ssh_common_args='-A'
