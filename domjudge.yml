@@ -1,8 +1,8 @@
 ---
 
-- name: Playbook for Installing DOMjudge on a Debian Server. Should be executed on the Host Server!
-  hosts: 192.168.224.138
-  become: yes
+- name: Playbook for Installing DOMjudge on a Debian Server
+  hosts: 192.168.224.137
+  become: true
 
   vars_prompt:
     - name: username
@@ -37,3 +37,10 @@
     - name: Show the password
       ansible.builtin.debug:
         msg: "{{ shell_output.stdout | split ('[OK]') | last | trim }}"
+      register: debug_output
+
+    - name: Write password to file
+      ansible.builtin.copy:
+        content: "{{ debug_output.msg }}\n"
+        dest: /home/{{ username }}/Domjudge/webpassword.txt
+        mode: '0644'

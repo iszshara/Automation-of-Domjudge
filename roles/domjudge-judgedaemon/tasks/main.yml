@@ -81,4 +81,4 @@
     line: "alias startdaemon='~/Domjudge/judgehost/bin/judgedaemon -n 2'"
     state: present
     create: true
-  become: false
+  become: true
