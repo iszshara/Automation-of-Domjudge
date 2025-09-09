@@ -9,6 +9,8 @@ sudo apt install ansible
 ```
 
 ... and need to establish an ssh connection between your Ansible Host Controller and the target server.
+When you are finished access the ansible.cfg and enter you path to the ssh key you set up for ansible.
+Furthermore access the inventory file and enter your connection credentials.
 
 ## Before installing
 
@@ -19,7 +21,7 @@ ansible-vault edit vault.yml
 ```
 Password is: 123456 for your first login.
 
-Please note that changing the password is important to secure your database password!
+Please note that changing the password is important to secure your database!
 
 Change the password via this command before installing Domjudge:
 ```
@@ -27,7 +29,7 @@ cd ~/Automation-of-Domjudge
 ansible-vault rekey vault.yml
 ```
 
-## To install:
+## To install
 ```
 ansible-playbook domjudge.yml --ask-vault-pass --ask-become-pass
 ```
