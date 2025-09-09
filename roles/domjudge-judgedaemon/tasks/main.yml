@@ -13,12 +13,23 @@
 
 - name: Adds user domjudge-run without home dir and login
   ansible.builtin.user:
-    name: domjduge-run-2
+    name: domjudge-run-2
     shell: /bin/false
     home: /nonexistent
     group: domjudge-run
     create_home: no
     state: present
+  become: true
+
+- name: Set correct Permissions for judgedaemon directories
+  ansible.builtin.file:
+    path: "/home/zeibi/Domjudge/judgehost/{{ item }}"
+    owner: zeibi
+    state: directory
+    recurse: yes
+  loop:
+    - log
+    - run
   become: true
 
 - name: add sudoers-domjudge to sudoers.d for runguard
@@ -63,3 +74,10 @@
 - name: Creating the cgroup that Domjudge will use
   ansible.builtin.command: sudo systemctl enable create-cgroups --now
   become: true
+
+- name: Starting the judgedaemon
+  ansible.builtin.command: ./judgedaemon -n 2
+  args:
+    chdir: "{{ judgehost_install_path }}/bin"
+  become: true
+  become_user: "{{ username }}"
