@@ -75,9 +75,10 @@
   ansible.builtin.command: sudo systemctl enable create-cgroups --now
   become: true
 
-- name: Starting the judgedaemon
-  ansible.builtin.command: ./judgedaemon -n 2
-  args:
-    chdir: "{{ judgehost_install_path }}/bin"
-  become: true
-  become_user: "{{ username }}"
+- name: Add a custom alias to bashrc
+  ansible.builtin.lineinfile:
+    path: /home/{{ username }}/.bashrc
+    line: "alias startdaemon='~/Domjudge/judgehost/bin/judgedaemon -n 2'"
+    state: present
+    create: true
+  become: false
