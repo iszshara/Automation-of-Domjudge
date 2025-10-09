@@ -9,6 +9,31 @@ sudo apt install ansible
 ```
 
 ... and need to establish an ssh connection between your Ansible Host Controller and the target server.
+
+## SSH Setup
+### Step 1 (on your Host Machine)
+Generate a ssh key
+``` 
+ssh-keygen -t ed25519 -C "ansible"
+```
+Choose a path to your ssh key
+``` Example
+/host/<username>/.ssh/ansible
+```
+-> Don't enter a passphrase, except if you want to type it in when you start the playbook.
+
+Copy the ssh key to the Domjudge Server
+```
+ssh-copy-id -i ~/Path/to/your/public/key <IP Address Domjudge Server>
+```
+
+### Step 2 (the machine which should be the Domjudge Server)
+To ensure that the key was correctly copied from your host to your future Domjudge Server type into the terminal of the Domjudge Server
+```
+cat .ssh/authorized_keys
+```
+-> You should be able to see a key with your key name at the end
+
 When you are finished access the ansible.cfg and enter you path to the ssh key you set up for ansible.
 Furthermore access the inventory file and enter your connection credentials.
 
