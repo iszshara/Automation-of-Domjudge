@@ -38,7 +38,10 @@ When you are finished access the ansible.cfg and enter you path to the ssh key y
 Furthermore access the inventory file and enter your connection credentials.
 
 ## Before installing
-
+Clone the Repository
+```
+git clone https://github.com/iszshara/Automation-of-Domjudge.git
+```
 Create your own Database Admin Password via:
 ```
 cd Automation-of-Domjudge
@@ -48,7 +51,7 @@ Password is: 123456 for your first login.
 
 Please note that changing the password is important to secure your database!
 
-Change the password via this command before installing Domjudge:
+Change the password via this command before running the Ansible Playbook and thus installing Domjudge:
 ```
 cd ~/Automation-of-Domjudge
 ansible-vault rekey vault.yml
