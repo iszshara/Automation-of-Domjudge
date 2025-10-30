@@ -1,10 +1,9 @@
 ---
 # Creates the webinterface for Domjudge
 
-- name: Set path and PHP version facts
+- name: Set path
   ansible.builtin.set_fact:
     domjudge_install_path: /home/{{ username }}/Domjudge/domserver
-    php_version: 8.2 
 
 - name: Link Apache configuration for Domjudge
   ansible.builtin.file:
