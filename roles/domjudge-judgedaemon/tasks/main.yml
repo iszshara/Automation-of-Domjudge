@@ -24,7 +24,7 @@
 - name: Set correct Permissions for judgedaemon directories
   ansible.builtin.file:
     path: "/home/zeibi/Domjudge/judgehost/{{ item }}"
-    owner: zeibi
+    owner: "{{ username }}"
     state: directory
     recurse: yes
   loop:
@@ -39,6 +39,7 @@
     owner: root
     group: root
     mode: '0440'
+    remote_src: true
   become: true
 
 - name: Adding package for rustc
