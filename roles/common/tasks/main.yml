@@ -44,7 +44,7 @@
 - name: Detect installed php version
   ansible.builtin.shell: "php -r 'echo PHP_MAJOR_VERSION.\".\".PHP_MINOR_VERSION;'"
   register: php_version_output
-  changed_when: false
 
-- set_fact:
-  php_version: "{{ php_version_output.stdout }}"
+- name: Set PHP version fact
+  ansible.builtin.set_fact:
+    php_version: "{{ php_version_output.stdout }}"
