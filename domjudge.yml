@@ -1,7 +1,7 @@
 ---
 
 - name: Playbook for Installing DOMjudge on a Debian Server
-  hosts: 192.168.224.137
+  hosts: all_hosts
   become: true
 
   vars_prompt:

@@ -40,3 +40,12 @@
     name: apport
     state: absent
     update_cache: yes
+
+- name: Detect installed php version
+  ansible.builtin.shell: "php -r 'echo PHP_MAJOR_VERSION.\".\".PHP_MINOR_VERSION;'"
+  register: php_version_output
+
+- name: Set php version facts 
+  ansible.builtin.set_fact:
+    php_version: "{{ php_version_output.stdout }}"
+  
