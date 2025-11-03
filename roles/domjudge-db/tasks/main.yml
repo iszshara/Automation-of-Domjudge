@@ -1,5 +1,4 @@
----
-# Creates the Domjudge Database and configures the Database
+# --- DOMjudge Datenbank Setup ---
 
 - name: Ensure MariaDB is installed
   ansible.builtin.package:
@@ -14,16 +13,23 @@
     state: started
   become: true
 
-- name: Set root password mariadb
-  mysql_user:
+- name: Set root password (if necessary)
+  community.mysql.mysql_user:
     check_implicit_admin: true
     login_user: root
     login_password: "{{ db_admin_password }}"
     user: root
     password: "{{ db_admin_password }}"
     host: localhost
+  no_log: true
+  
+# ----------------------------------------------------------------------------------
+# SCHRITT 1: DOMjudge Passwörter generieren und auslesen
+# ----------------------------------------------------------------------------------
 
-- name: Generate database credentials file
+- name: Generate database credentials file (REQUIRED by DOMjudge app)
+  # Führt den genpass-Befehl aus, um die Datei etc/dbpasswords.secret zu erstellen/aktualisieren.
+  # Dies muss bei jedem Durchlauf passieren, um sicherzustellen, dass die Datei existiert.
   ansible.builtin.command: >
     ./dj_setup_database genpass
   args:
@@ -31,43 +37,79 @@
   become_user: "{{ username }}"
   no_log: true
 
-- name: Drop Domjudge Database if it exists
-  community.mysql.mysql_query:
-    query: "DROP DATABASE IF EXISTS domjudge;"
+- name: Read DOMjudge DB password from the generated file
+  # Liest das zufällige Passwort aus der Datei aus.
+  ansible.builtin.slurp:
+    src: /home/{{ username }}/Domjudge/domserver/etc/dbpasswords.secret
+  register: db_password_slurp
+  become_user: "{{ username }}"
+  no_log: true
+
+- name: Set fact for DOMjudge DB password
+  # Dekodiert das Passwort zur Verwendung in den folgenden Tasks.
+  ansible.builtin.set_fact:
+    domjudge_db_password: "{{ db_password_slurp.content | b64decode | trim }}"
+  no_log: true
+
+# ----------------------------------------------------------------------------------
+# SCHRITT 2: Datenbank und Benutzer Idempotent erstellen
+# ----------------------------------------------------------------------------------
+
+- name: Ensure 'domjudge' database exists (Idempotent)
+  # Erstellt die Datenbank nur, wenn sie noch nicht existiert.
+  community.mysql.mysql_db:
+    name: domjudge
+    state: present
     login_user: root
     login_password: "{{ db_admin_password }}"
   become: true
   no_log: true
 
-- name: Run Domjudge database setup script to install database and user
+- name: Ensure DOMjudge user exists with correct password (Idempotent)
+  # Erstellt den Benutzer 'domjudge' mit dem zufällig generierten Passwort.
+  community.mysql.mysql_user:
+    name: domjudge
+    password: "{{ domjudge_db_password }}"
+    host: localhost
+    state: present
+    login_user: root
+    login_password: "{{ db_admin_password }}"
+  become: true
+  no_log: true
+
+- name: Grant permissions to domjudge user on 'domjudge' database (Idempotent)
+  # Stellt sicher, dass der Benutzer die benötigten Rechte auf seine Datenbank hat.
+  community.mysql.mysql_user:
+    name: domjudge
+    priv: 'domjudge.*:ALL'
+    host: localhost
+    state: present
+    login_user: root
+    login_password: "{{ db_admin_password }}"
+  become: true
+  no_log: true
+  
+# ----------------------------------------------------------------------------------
+# SCHRITT 3: DOMjudge Schema initialisieren
+# ----------------------------------------------------------------------------------
+
+- name: Check if DOMjudge schema is initialized (e.g., check for 'user' table)
+  # Prüft, ob die 'user'-Tabelle existiert. Wenn nicht, ist das Schema noch leer.
+  community.mysql.mysql_query:
+    login_user: domjudge
+    login_password: "{{ domjudge_db_password }}"
+    db: domjudge
+    query: "SHOW TABLES LIKE 'user';"
+  register: table_check
+  ignore_errors: true
+  no_log: true
+
+- name: Install database schema (ONLY if tables are missing)
+  # Führt den schema-only Teil des DOMjudge Setups aus.
   ansible.builtin.command: >
-    ./dj_setup_database -u root -p {{ db_admin_password }} install
+    ./dj_setup_database install-schema
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
-  become: true
-
-- name: Checking if databases were successfully created
-  community.mysql.mysql_query:
-    login_user: root
-    login_password: "{{ db_admin_password }}"
-    query: "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{{ item }}';"
-  loop:
-    - domjudge
-    - information_schema
-    - mysql
-    - performance_schema
-    - sys
-  register: db_check
+  become_user: "{{ username }}"
+  when: table_check.query_result[0] | length == 0
   no_log: true
-
-- name: Throws an Error if Databases are missing
-  ansible.builtin.debug:
-    msg: >-
-      {% if item.query_result[0] | length > 0 -%}
-        Database '{{ item.item }}' exists.
-      {%- else -%}
-        Database '{{ item.item }}' does not exist.
-      {%- endif %}
-  loop: "{{ db_check.results }}"
-  no_log: true
-   
