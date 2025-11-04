@@ -32,7 +32,6 @@
         chdir: "{{ domjudge_install_path }}/webapp"
       register: shell_output
       become_user: "{{ username }}"
-      no_log: true
 
     - name: Show the password
       ansible.builtin.debug:
