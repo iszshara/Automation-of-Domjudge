@@ -26,26 +26,22 @@
 
 
   tasks:
-  - name: Reset Domjudge admin password
-    ansible.builtin.command:
-      cmd: ./bin/console domjudge:reset-user-password admin
-      chdir: "{{ domjudge_install_path }}/webapp"
-    become_user: "{{ username }}"
-    register: password_reset
-    # no_log: true
-    become_user: "{{ username }}"
-    when: reset_admin_password | default(false)
-    changed_when: true
+    - name: Reset admin user password
+      ansible.builtin.shell: 
+        cmd: ./bin/console domjudge:reset-user-password admin
+        chdir: "{{ domjudge_install_path }}/webapp"
+      register: shell_output
+      become_user: "{{ username }}"
+      no_log: true
 
-  - name: Get Password
-    ansible.builtin.debug:
-      msg: "{{ password_reset.stdout | split ('[OK]') | last | trim }}"
-    register: output
+    - name: Show the password
+      ansible.builtin.debug:
+        msg: "{{ shell_output.stdout | split ('[OK]') | last | trim }}"
+      register: debug_output
 
-  - name: Extract and store new admin password
-    ansible.builtin.copy:
-      content: "{{ output.msg }}\n"
-      dest: /home/{{ username }}/Domjudge/webpassword.txt
-      mode: '0600'
-    # no_log: true
+    - name: Write password to file
+      ansible.builtin.copy:
+        content: "{{ debug_output.msg }}\n"
+        dest: /home/{{ username }}/Domjudge/webpassword.txt
+        mode: '0600'
 
