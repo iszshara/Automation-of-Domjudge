@@ -33,14 +33,19 @@
     become_user: "{{ username }}"
     register: password_reset
     # no_log: true
+    become_user: "{{ username }}"
     when: reset_admin_password | default(false)
     changed_when: true
 
+  - name: Get Password
+    ansible.builtin.debug:
+      msg: "{{ password_reset.stdout | split ('[OK]') | last | trim }}"
+    register: output
+
   - name: Extract and store new admin password
     ansible.builtin.copy:
-      content: "{{ (password_reset.stdout | regex_search('Password:\\s*(\\S+)', '\\1')) | default('') }}\n"
+      content: "{{ output.msg }}\n"
       dest: /home/{{ username }}/Domjudge/webpassword.txt
       mode: '0600'
-    when: reset_admin_password | default(false)
     # no_log: true
 
