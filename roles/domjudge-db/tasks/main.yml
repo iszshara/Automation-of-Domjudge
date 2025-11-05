@@ -1,5 +1,4 @@
 ---
-# Creates the Domjudge Database and configures the Database
 
 - name: Ensure MariaDB is installed
   ansible.builtin.package:
@@ -14,60 +13,48 @@
     state: started
   become: true
 
-- name: Set root password mariadb
-  mysql_user:
+- name: Set MariaDB root password
+  community.mysql.mysql_user:
     check_implicit_admin: true
     login_user: root
     login_password: "{{ db_admin_password }}"
     user: root
     password: "{{ db_admin_password }}"
     host: localhost
+  become: true
 
-- name: Generate database credentials file
-  ansible.builtin.command: >
-    ./dj_setup_database genpass
+- name: Generate database credentials file if missing
+  ansible.builtin.command: ./dj_setup_database genpass
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
+    creates: /home/{{ username }}/Domjudge/domserver/etc/dbpasswords.secret
   become_user: "{{ username }}"
   no_log: true
 
-- name: Drop Domjudge Database if it exists
+- name: Check if Domjudge database already exists
   community.mysql.mysql_query:
-    query: "DROP DATABASE IF EXISTS domjudge;"
     login_user: root
     login_password: "{{ db_admin_password }}"
+    query: "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'domjudge';"
+  register: domjudge_db_check
   become: true
   no_log: true
 
-- name: Run Domjudge database setup script to install database and user
+- name: Run Domjudge database setup script if not present
   ansible.builtin.command: >
     ./dj_setup_database -u root -p {{ db_admin_password }} install
   args:
     chdir: /home/{{ username }}/Domjudge/domserver/bin
   become: true
+  when: domjudge_db_check.query_result[0] | length == 0
+  register: domjudge_install
+  changed_when: domjudge_install.rc == 0
 
-- name: Checking if databases were successfully created
-  community.mysql.mysql_query:
-    login_user: root
-    login_password: "{{ db_admin_password }}"
-    query: "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{{ item }}';"
-  loop:
-    - domjudge
-    - information_schema
-    - mysql
-    - performance_schema
-    - sys
-  register: db_check
-  no_log: true
-
-- name: Throws an Error if Databases are missing
+- name: Debug output for database creation
   ansible.builtin.debug:
     msg: >-
-      {% if item.query_result[0] | length > 0 -%}
-        Database '{{ item.item }}' exists.
-      {%- else -%}
-        Database '{{ item.item }}' does not exist.
-      {%- endif %}
-  loop: "{{ db_check.results }}"
-  no_log: true
-   
+      {% if domjudge_db_check.query_result[0] | length > 0 %}
+        Database 'domjudge' already exists, skipping installation.
+      {% else %}
+        Database 'domjudge' has been created.
+      {% endif %}
